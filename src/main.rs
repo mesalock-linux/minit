@@ -28,7 +28,6 @@ fn run(line: &str) {
 }
 
 fn main() {
-    run("/bin/mknod /dev/urandom c 1 9");
     run("/bin/ion");
 
     loop {
