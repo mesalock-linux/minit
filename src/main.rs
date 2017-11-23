@@ -7,6 +7,7 @@
 extern crate libc;
 extern crate nix;
 use nix::unistd;
+use nix::mount;
 
 use libc::{waitpid, sigprocmask, sigfillset, sigset_t, signal};
 use std::os::unix::process::CommandExt;
@@ -77,9 +78,17 @@ fn main() {
 
     // TODO: setup signal handler
 
-    run("/bin/busybox mount -n -t proc proc /proc");
-    run("/bin/busybox mount -n -t devtmpfs devtmpfs /dev");
-    run("/bin/busybox mount -n -t sysfs sysfs /sys");
+    // mount -n -t proc proc /proc
+    let proc_mount_flags = mount::MS_NOSUID | mount::MS_NODEV | mount::MS_NOEXEC | mount::MS_RELATIME;
+    let _ = mount::mount(Some("proc"), "/proc", Some("proc"), proc_mount_flags, Some("mode=0555")).expect("mount proc failed");
+
+    // mount -n -t devtmpfs devtmpfs /dev
+    let dev_mount_flags = mount::MS_NOSUID | mount::MS_RELATIME;
+    let _ = mount::mount(Some("dev"), "/dev", Some("devtmpfs"), dev_mount_flags, Some("mode=0755")).expect("mount tmp failed");
+
+    // mount -n -t sysfs sysfs /sys
+    let sys_mount_flags = mount::MS_NOSUID | mount::MS_NODEV | mount::MS_NOEXEC | mount::MS_RELATIME;
+    let _ = mount::mount(Some("sysfs"), "/sys", Some("sysfs"), sys_mount_flags, Some("mode=0555")).expect("mount sys failed");
 
     run("mknod -m 600 /dev/console c 5 1");
     run("mknod -m 620 /dev/tty1 c 4 1");
