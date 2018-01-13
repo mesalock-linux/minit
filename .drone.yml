@@ -1,0 +1,11 @@
+pipeline:
+  build:
+    image: mesalocklinux/build-mesalock-linux
+    commands:
+      - rustup show
+      - cargo build
+  notify:
+    image: drillster/drone-email
+    secrets: [ plugin_host, plugin_username, plugin_password, plugin_from ]
+    when:
+      status: [ changed, failure ]
